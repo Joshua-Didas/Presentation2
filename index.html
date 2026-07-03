@@ -3,13 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bistro · services</title>
+  <title>Food Delivery System</title>
   <!-- Font Awesome 6 (Free) -->
-  <link rel="stylesheet" href="resStyle.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="services-card">
+  <!-- Loading Animation -->
+  <div class="loader" id="loader">
+    <div class="loader-spinner"></div>
+    <p>Loading deliciousness...</p>
+  </div>
 
+  <div class="services-card" id="mainContent">
     <!-- header -->
     <div class="header">
       <h1>
@@ -19,38 +25,100 @@
       <p><i class="fas fa-circle" style="color: #c0392b; font-size: 0.5rem; vertical-align: middle; margin: 0 6px;"></i> crafted for taste & comfort <i class="fas fa-circle" style="color: #c0392b; font-size: 0.5rem; vertical-align: middle; margin: 0 6px;"></i></p>
     </div>
 
+    <!-- Order Status Banner -->
+    <div class="order-status animate-slide-down">
+      <div class="status-item">
+        <i class="fas fa-check-circle" style="color: #27ae60;"></i>
+        <span>Online orders active</span>
+      </div>
+      <div class="status-item">
+        <i class="fas fa-clock" style="color: #f39c12;"></i>
+        <span>Est. delivery: 25-35 min</span>
+      </div>
+      <div class="status-item">
+        <i class="fas fa-percent" style="color: #3498db;"></i>
+        <span>20% off first order</span>
+      </div>
+    </div>
+
     <!-- main services grid -->
     <div class="service-grid">
       <!-- 1. dine in -->
-      <div class="service-item">
+      <div class="service-item" data-service="dine">
         <div class="service-icon"><i class="fas fa-chair"></i></div>
         <h3>Dine in</h3>
         <p>Warm, cozy atmosphere with indoor & outdoor seating.</p>
         <span class="service-tag">reserve a table</span>
+        <div class="service-hover-detail">
+          <i class="fas fa-arrow-right"></i> Book now
+        </div>
       </div>
 
       <!-- 2. takeaway -->
-      <div class="service-item">
+      <div class="service-item" data-service="takeaway">
         <div class="service-icon"><i class="fas fa-bag-shopping"></i></div>
         <h3>Takeaway</h3>
         <p>Fresh, hot meals packed with care – ready in minutes.</p>
         <span class="service-tag">order online</span>
+        <div class="service-hover-detail">
+          <i class="fas fa-arrow-right"></i> Order now
+        </div>
       </div>
 
       <!-- 3. delivery -->
-      <div class="service-item">
+      <div class="service-item" data-service="delivery">
         <div class="service-icon"><i class="fas fa-truck-fast"></i></div>
         <h3>Delivery</h3>
         <p>Contactless delivery to your door, within 30 min.</p>
         <span class="service-tag">free delivery*</span>
+        <div class="service-hover-detail">
+          <i class="fas fa-arrow-right"></i> Track order
+        </div>
       </div>
 
       <!-- 4. catering -->
-      <div class="service-item">
+      <div class="service-item" data-service="catering">
         <div class="service-icon"><i class="fas fa-people-group"></i></div>
         <h3>Catering</h3>
         <p>Private & corporate events, from 10 to 150 guests.</p>
         <span class="service-tag">custom menu</span>
+        <div class="service-hover-detail">
+          <i class="fas fa-arrow-right"></i> Inquire now
+        </div>
+      </div>
+    </div>
+
+    <!-- Interactive Order Simulator -->
+    <div class="order-simulator animate-fade-in">
+      <h3><i class="fas fa-shopping-cart"></i> Quick Order Simulator</h3>
+      <div class="simulator-controls">
+        <div class="menu-item" data-item="burger">
+          <i class="fas fa-hamburger"></i>
+          <span>Burger</span>
+          <span class="price">$12.99</span>
+        </div>
+        <div class="menu-item" data-item="pizza">
+          <i class="fas fa-pizza-slice"></i>
+          <span>Pizza</span>
+          <span class="price">$15.99</span>
+        </div>
+        <div class="menu-item" data-item="pasta">
+          <i class="fas fa-utensil-spoon"></i>
+          <span>Pasta</span>
+          <span class="price">$13.99</span>
+        </div>
+        <div class="menu-item" data-item="drink">
+          <i class="fas fa-coffee"></i>
+          <span>Drink</span>
+          <span class="price">$4.99</span>
+        </div>
+      </div>
+      <div class="order-summary">
+        <span>Cart: <span id="cartCount">0</span> items</span>
+        <span>Total: $<span id="cartTotal">0.00</span></span>
+        <button class="checkout-btn" id="checkoutBtn">
+          <i class="fas fa-shopping-bag"></i> Checkout
+        </button>
       </div>
     </div>
 
@@ -86,10 +154,136 @@
       </span>
     </div>
 
-    <!-- small footnote: *conditions apply (just for style) -->
+    <!-- small footnote -->
     <p style="font-size: 0.7rem; color: #b7a392; text-align: right; margin-top: 1rem; letter-spacing: 0.2px; padding-right: 0.2rem;">
       <i class="fas fa-asterisk" style="font-size: 0.5rem; opacity: 0.6;"></i> free delivery on orders over $35
     </p>
   </div>
+
+  <!-- Success Toast Notification -->
+  <div class="toast" id="toast">
+    <i class="fas fa-check-circle"></i>
+    <span id="toastMessage">Order placed successfully!</span>
+  </div>
+
+  <script>
+    // Loader animation
+    window.addEventListener('load', function() {
+      const loader = document.getElementById('loader');
+      const mainContent = document.getElementById('mainContent');
+      
+      setTimeout(() => {
+        loader.style.opacity = '0';
+        loader.style.visibility = 'hidden';
+        mainContent.style.opacity = '1';
+        mainContent.style.transform = 'translateY(0)';
+      }, 1500);
+    });
+
+    // Service item click animation
+    document.querySelectorAll('.service-item').forEach(item => {
+      item.addEventListener('click', function() {
+        const service = this.dataset.service;
+        const detail = this.querySelector('.service-hover-detail');
+        
+        // Add click animation
+        this.style.transform = 'scale(0.95)';
+        setTimeout(() => {
+          this.style.transform = '';
+        }, 200);
+
+        // Show service selection toast
+        showToast(`Selected ${service.charAt(0).toUpperCase() + service.slice(1)} service`);
+      });
+    });
+
+    // Order Simulator
+    let cartItems = 0;
+    let cartTotal = 0;
+    const prices = {
+      burger: 12.99,
+      pizza: 15.99,
+      pasta: 13.99,
+      drink: 4.99
+    };
+
+    document.querySelectorAll('.menu-item').forEach(item => {
+      item.addEventListener('click', function() {
+        const itemName = this.dataset.item;
+        const price = prices[itemName];
+        
+        cartItems++;
+        cartTotal += price;
+        
+        document.getElementById('cartCount').textContent = cartItems;
+        document.getElementById('cartTotal').textContent = cartTotal.toFixed(2);
+        
+        // Add animation
+        this.style.transform = 'scale(1.1)';
+        this.style.background = '#27ae60';
+        this.style.color = 'white';
+        setTimeout(() => {
+          this.style.transform = '';
+          this.style.background = '';
+          this.style.color = '';
+        }, 300);
+        
+        showToast(`Added ${itemName} to cart!`);
+      });
+    });
+
+    // Checkout button
+    document.getElementById('checkoutBtn').addEventListener('click', function() {
+      if (cartItems === 0) {
+        showToast('Your cart is empty! Add some items first.', 'warning');
+        return;
+      }
+      
+      // Celebration animation
+      this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+      this.disabled = true;
+      
+      setTimeout(() => {
+        showToast(`Order placed! Total: $${cartTotal.toFixed(2)} 🎉`);
+        this.innerHTML = '<i class="fas fa-check"></i> Order Placed!';
+        this.style.background = '#27ae60';
+        
+        // Reset cart after 2 seconds
+        setTimeout(() => {
+          cartItems = 0;
+          cartTotal = 0;
+          document.getElementById('cartCount').textContent = '0';
+          document.getElementById('cartTotal').textContent = '0.00';
+          this.innerHTML = '<i class="fas fa-shopping-bag"></i> Checkout';
+          this.disabled = false;
+          this.style.background = '';
+        }, 2000);
+      }, 1500);
+    });
+
+    // Toast notification system
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('toast');
+      const toastMessage = document.getElementById('toastMessage');
+      
+      toastMessage.textContent = message;
+      toast.className = 'toast show ' + type;
+      
+      if (type === 'warning') {
+        toast.querySelector('i').className = 'fas fa-exclamation-circle';
+      } else {
+        toast.querySelector('i').className = 'fas fa-check-circle';
+      }
+      
+      setTimeout(() => {
+        toast.className = 'toast';
+      }, 3000);
+    }
+
+    // Auto-hide toast on click
+    document.getElementById('toast').addEventListener('click', function() {
+      this.className = 'toast';
+    });
+  </script>
 </body>
 </html>
